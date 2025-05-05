@@ -1,2 +1,104 @@
-requirements.txt
+
+# Requirements
+
+```text
+fastapi==0.95.0
+uvicorn[standard]==0.22.0
+openai==0.27.0
+python-dotenv==1.0.0
+pandas==2.0.3
+pydantic==2.3.0
+scikit-learn==1.3.0
+transformers==4.31.0
+requests==2.31.0
+```
+
+I've created a draft `requirements.txt` specifying common Python packages needed for our E-commerce Upsell & Cross-sell Recommender using MCP, including FastAPI for the web service, OpenAI for model calls, pandas for data handling, and dotenv for environment variable support.
+
+---
+
+## 1. Overview
+
+**Goal:** Boost average order value by automatically surfacing highly relevant upsell & cross-sell offers in conversational form.
+
+**Components:**
+
+* **Planner:** Ingests browsing/purchase history; infers intent, budget, and best upsell/cross-sell candidates.
+* **Generator:** Crafts personalized product suggestions and marketing copy.
+
+## 2. Functional Requirements
+
+### User Profile & History Ingestion
+
+* Collect last N pages viewed, items added to cart, past purchase records.
+* Normalize data into sessions, item categories, price tiers.
+
+### Intent & Budget Inference (Planner)
+
+* Identify primary shopping intent (e.g. “gift,” “upgrade,” “accessory”).
+* Estimate customer’s budget range from past spend and browsing.
+* Produce structured “recommendation plan” detailing:
+
+  * Target category
+  * Budget bracket
+  * Timing trigger (on-page, post-purchase, in-cart)
+
+### Recommendation Generation (Generator)
+
+* Take planner output + product catalog metadata → top 3–5 product IDs.
+* Compose short, persuasive copy for each suggestion (“Since you loved X, you might like Y—now 20% off!”).
+* Include dynamic fields: product name, image URL, price, discount.
+
+### Delivery Channels
+
+* On-site widget: popup/tooltips in cart or product pages.
+* Email: integrate into order-confirmation or abandoned-cart templates.
+* Chatbot: integrate with live chat or messaging channels.
+
+### Feedback & Learning
+
+* Capture click / add-to-cart / purchase events for each recommendation.
+* Feed back into planner to refine future intent/budget inference.
+
+## 3. Non-Functional Requirements
+
+* **Latency:** Planner inference <100 ms; Generator <200 ms.
+* **Scalability:** Support 1,000s of concurrent sessions.
+* **Availability:** 99.9% uptime; auto-scale under heavy load.
+* **Security & Privacy:** Encrypt PII in transit & at rest; comply with GDPR.
+* **Observability:** Logging of inference requests, errors, and key metrics (CTR, AOV lift).
+
+## 4. Data & Integration
+
+* **Inputs:** Customer session log, user profile API, product catalog API.
+* **Outputs:** Recommendation plan (JSON), generated messages (JSON with text + media URLs).
+* **APIs:**
+
+  * `POST /mcp/planner` → `{ userId, sessionData }` → `{ plan: {...} }`
+  * `POST /mcp/generator` → `{ plan, catalogSlice }` → `{ recommendations: [...] }`
+
+## 5. Model Requirements
+
+### Planner
+
+* Fine-tuned on historical session→purchase mappings.
+* Must output structured intents and budget buckets.
+
+### Generator
+
+* Fine-tuned on marketing copy and product descriptions.
+* Must support slot‐filling and multi‐turn conversational variants.
+
+## 6. Monitoring & Metrics
+
+### Business KPIs
+
+* Click-through rate (CTR) on recommendations.
+* Conversion rate lift vs. baseline.
+* Average order value delta.
+
+### System Metrics
+
+* API error rates, latency, throughput.
+* Model drift detection on planner outputs.
 
